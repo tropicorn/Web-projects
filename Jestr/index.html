@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title></title>
+		<meta name='viewport' content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta name='apple-mobile-web-app-capable' content='yes' />
+		<meta charset='utf-8' />
+		<link rel='stylesheet' href='css/styles.css' />
+		
+		<script>
+			$(document).ready(function{
+				/*$('#suggestion').cycle({ 
+				fx:      'scrollLeft', 
+				next:   '.front', 
+				timeout:  0, 
+				easing:  'easeInOutBack' 
+				});
+				*/
+				
+				$(function(){
+					window.myFlux = new flux.slider('.front');
+				});
+			});
+		</script>
+		
+	</head>
+
+	<body>
+		<nav class='subtleShadow'>
+			<ul>
+				<li><a href='./'><img id='logo' src='i/logo.png' alt='Jestr' /></a></li>
+				<li><a href='./'>Start Over</a></li>
+				<li><a href='./likes'>Likes</a></li>
+				<li><a href='./dislikes'>Dislikes</a></li>
+				<li><a href='./settings'>Settings</a></li>
+				<div class='clear'></div>
+			</ul>
+		</nav>
+
+		<div id='mediaSelectContainer' class='subtleShadow'>
+			<p class='question'>What are you looking for?</p>
+
+			<div class='mediaSelectWrapper'>
+				<div class='mediaSelectInner games subtleShadow'>
+					<div class='mediaSelectIcon'>
+						g
+					</div>
+
+					<div class='mediaSelectName'>
+						Games
+					</div>
+
+					<div class='clear'></div>
+				</div>
+			</div>
+
+			<div class='mediaSelectWrapper'>
+				<div class='mediaSelectInner movies subtleShadow'>
+					<div class='mediaSelectIcon'>
+						m
+					</div>
+
+					<div class='mediaSelectName'>
+						Movies
+					</div>
+
+					<div class='clear'></div>
+				</div>
+			</div>
+
+			<div class='mediaSelectWrapper'>
+				<div class='mediaSelectInner books subtleShadow'>
+					<div class='mediaSelectIcon'>
+						b
+					</div>
+
+					<div class='mediaSelectName'>
+						Books
+					</div>
+
+					<div class='clear'></div>
+				</div>
+			</div>
+		</div>
+
+		<div id='searchContainer' class='subtleShadow'>
+			<div id='searchWrapper'><input type='text' id='search' placeholder='Search for something...' /></div>
+			<div id='searchButtonWrapper'>
+				<div id='searchButton' class='subtleShadow'>
+					<span id='searchText'>Search</span>
+				</div>
+			</div>
+		</div>
+
+		<div id='suggestionContainer'>
+			<div id='dislikeWrapper'>
+				<div id='dislike' class='subtleShadow'>
+				    <p>d</p>
+				</div>
+			</div>
+
+			<div id='suggestionWrapper'>
+				<div class='flip-container'>
+					<div id='suggestion' class='flipper'>
+						<div class='front'>
+							<img src='i/wilfred.jpg' class='subtleShadow' id='wilfred'/>
+							<img src='i/ironman.jpg' class='subtleShadow' />
+						    <div class='suggestionText'>
+			    			    <div class='suggestionTextInner'>
+									<p>
+				    			        <i>Wilfred</i> is a show about Ryan and Wilfred. Everyone else sees Wilfred as just a dog,
+				    			        but Ryan sees an Australian bloke in a cheap dog suit.
+									</p>
+			    			    </div>
+						    </div>
+						</div>
+
+						<div class='back subtleShadow'>
+							<div class='moreInfoTextInner'>
+								<h3>Wilfred (US)</h3>
+
+								<p>
+									<i>Wilfred</i> is a half-hour, live-action comedy about 'Ryan,' a young man
+									struggling to make his way in the world until he forms a unique friendship
+									with 'Wilfred,' his neighbor’s canine pet. Everyone else sees Wilfred as
+									just a dog, but Ryan sees a crude and somewhat surly, yet irrepressibly
+									brave and honest Australian bloke in a cheap dog suit.
+								</p>
+
+								<p>
+									While leading him through a series of comedic and existential
+									adventures, Wilfred the dog shows Ryan the man how to overcome
+									his fears and joyfully embrace the unpredictability and insanity
+									of the world around him.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class='clear'></div>
+			</div>
+
+			<div id='likeWrapper'>
+				<div id='like' class='subtleShadow'>
+				    <p>u</p>
+				</div>
+			</div>
+
+			<div class='clear'></div>
+		</div>
+
+		<script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js'></script>
+		<script>window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+			
+		</script>
+		
+		
+		<script src='js/main.js'></script>
+		<script src='js/jquery.cycle.js'></script>
+		
+	</body>
+</html>

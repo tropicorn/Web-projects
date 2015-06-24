@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title> First Client Project</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">  
+
+<link type= "text/css" rel="stylesheet" href= "style.css"/>	
+
+<script src="data.js" type="text/javascript">
+	var ieSeven= false;
+</script>
+
+<script src="scriptcode.js" type="text/javascript"></script>
+
+<!--[if lt IE 8]>
+	<script src="data.js" type="text/javascript">
+		var ieSeven= true;
+	</script>
+<![endif]-->
+
+<script src="cookies.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+	//global var
+	var allH4= document.getElementsByTagName('h4');
+
+	//make a cookie here
+	function storeValues(form) {
+		SetCookie("user", form.user.value); 
+		SetCookie("email", form.email.value); 
+		SetCookie("post", form.post.value); 
+		return true; 
+	}
+
+	//send to localStorage
+	
+	//change font to different family, color, and SIZE
+	function changeFont(font){
+		//does browser understand localStorage?
+		if(window.localStorage){
+			//I understand
+				
+			if(font){
+				//set the localStorage
+				window.localStorage.setItem('fontcolor', font);
+				
+			}
+			
+			for( var i=0; i< allH4.length; i++){
+				//set font color from localStorage
+				allH4[i].style.color= window.localStorage.getItem('fontcolor');
+			}
+				
+		}
+		
+	}
+		
+	function changeSize(size){
+		//does browser understand localStorage?
+		if(window.localStorage){
+			//I understand
+				
+			if(size){
+				//set the localStorage
+				window.localStorage.setItem('fontsize', size);
+				
+			}
+			
+			for( var i=0; i< allH4.length; i++){
+				//set font size from localStorage
+				allH4[i].style.fontSize= window.localStorage.getItem('fontsize');
+			}
+				
+		}
+		
+	}
+	
+	function changeFam(family){
+		//does browser understand localStorage?
+		if(window.localStorage){
+			//I understand
+				
+			if(family){
+				//set the localStorage
+				window.localStorage.setItem('fontfamily', family);
+				
+			}
+			
+			for( var i=0; i< allH4.length; i++){
+				//set font type from localStorage
+				allH4[i].style.fontFamily= window.localStorage.getItem('fontfamily');
+			}
+				
+		}
+		
+	}
+		
+	function clearFont(){
+			localStorage.setItem('color', '');
+			localStorage.setItem('fontsize', '');
+			localStorage.setItem('fontfamily', '');
+			
+			for( var i=0; i< allH4.length; i++){
+				allH4[i].style.color=window.localStorage.getItem('color');
+				allH4[i].style.fontSize=window.localStorage.getItem('fontsize');
+				allH4[i].style.fontSize=window.localStorage.getItem('fontfamily');
+			}
+			
+	}
+	
+	
+</script>
+
+</head>
+
+
+<body onload="createOption('categories');" style="font-size:20px; font-family:Courier">
+
+<h4> It is Saturday night and you have nothing to do... </h4>
+
+<div class="container" style="position:absolute; bottom:5px; display:block;">
+	<h4> Don't like the Font you see? Change it here -- </h4>
+	<div id="color">
+		Change font color: <span onclick="changeFont('yellow')"> Yellow </span> <| 
+		<span onclick="changeFont('blue')">Blue</span> <|
+		<span onclick="changeFont('orange')">Orange</span> 
+		
+	</div>
+
+
+	<div id="type">
+		Change font type: <span onclick="changeFam('Arial')">Arial</span> <| 
+		<span onclick="changeFam('Impact')">Impact</span> <|
+		<span onclick="changeFam('Comic Sans')">Comic Sans</span> 
+
+	</div>
+
+
+	<div id="size">
+		Change font size: <span  onclick="changeSize('10px')"> Small </span> <|
+		<span onclick="changeSize('16px')">Medium</span> <| 
+		<span onclick="changeSize('30px')">Large</span><|
+		
+	</div>
+	
+	<span onclick="clearFont()">Clear</span>
+
+</div>
+
+<div id="image">
+	<img src="media/movie-reel.gif" alt="Reel" />
+	
+</div>
+
+
+</body>
+
+
+</html> 

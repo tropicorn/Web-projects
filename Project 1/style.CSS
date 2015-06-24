@@ -1,0 +1,99 @@
+/*style the page with CSS here */
+	
+body{
+	width:85%;
+	background-color:#365370;
+	color:#5EBF5E;
+	min-width:1000px;
+	margin-left:auto;
+	margin-right: auto;
+	padding-left:10px;
+	border-left:2px dashed white;
+
+}
+
+.container div{
+	width:600px;
+	margin:10px;
+	color:#FFDB4D;
+	left:200px;
+	background-color:#AD5C33;
+	white-space:nowrap;
+	border:1px solid white;
+}
+
+span{
+	backgroundcolor:#AD5C33;
+	color:#FFB6CE;
+	cursor:pointer;
+}
+
+
+#aPic {
+	float:right;
+	
+}
+
+/*selection div*/
+div:not(.container):not(#color):not(#type):not(#size):not(#formDiv):not(#image){
+	width:95%;
+	border:2px solid white;
+	margin: 1em;
+	background-color:lightgreen;
+	display:block;
+	color:black;
+	overflow:auto;
+
+}
+
+
+
+#formID{
+	margin-top:10px;
+	padding: 0 10px;
+	border:2px solid blue;
+	borderradius:10px;
+}
+
+#formID label, input{
+	color:black;
+	display:block;
+	
+}
+
+#formID input:focus {
+	background: #F2955E;
+}
+
+#formDiv {
+	width:400px;
+	float:right;
+	clear:both;
+	margin:10px;
+	position:absolute;
+    transform:translateX(800px);
+	
+}
+
+
+#image {
+	position:absolute;
+	width:15%;
+	bottom:0px;
+    right:0px; 
+	
+
+}
+
+.rotate{
+	color:black;
+	transform:rotate(30deg);
+		
+
+	background-image: mslineargradient(bottom right, #FFFFFF 0%, #006594 80%);
+	background-image: mozlineargradient(bottom right, #FFFFFF 0%, #006594 80%);
+	background-image: olineargradient(bottom right, #FFFFFF 0%, #006594 80%);
+	background-image: webkitgradient(linear, right bottom, left top, colorstop(0, #FFFFFF), colorstop(1, #006594));
+	background-image: webkitlineargradient(bottom right, #FFFFFF 0%, #006594 80%);
+	background-image: lineargradient(to top left, #FFFFFF 0%, #006594 80%);
+}
