@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Quang's 340 jQuery Project</title>
+  
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+
+<script type="text/javascript">
+
+	if($.browser.msie && parseInt($.browser.version,10) < 7) {
+	
+	 
+		//IE 7 or less, redirect to browser download site
+		alert('You are using an outdated browser!'); 
+		$(location).attr('href', 'http://download.cnet.com/windows/browsers/');
+	}
+	else {
+		//Do nothing, the other browsers are good
+
+	}
+
+</script>
+	
+
+<script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+
+<script type="text/javascript" src="scripts/jquery.pagination.js"></script>
+<script type="text/javascript" src="scripts/gmap3.js"></script>
+<script type="text/javascript" src="scripts/jquery.avgrund.js"></script>
+<script type="text/javascript" src="scripts/jquery.nprogress.js"></script>
+
+
+<script src="http://maps.google.com/maps/api/js?sensor=false&amp;language=en" type="text/javascript"></script>
+
+<link type="text/css" rel="stylesheet" href="styles/mainstyle.css"/>
+<link type="text/css" rel="stylesheet" href="styles/pagination.css"/>
+<link type="text/css" rel="stylesheet" href="styles/avgrund.css"/>
+<link type="text/css" rel="stylesheet" href="styles/nprogress.css"/>
+
+
+<link type="text/css" rel="stylesheet" href="styles/jquery-ui-1.10.3.custom.css"/>
+
+
+<script type="text/javascript">
+	$(function(){
+		//hide when document loads 
+		$( '#tabs' ).hide();
+		
+
+		
+	});
+	
+	
+	//autocomplete
+	$(function() {
+		//an array to hold XML elements
+		var list= [];
+		
+		$("#orgName").autocomplete({
+
+			source: list,
+			minLength: 2
+		
+
+		});
+		
+		
+		$.ajax({
+		url: 'proxy.php',
+		data:{path:'/Organizations?'+$('#searchForm').serialize()},
+		dataType: 'xml',
+		success: function(data) {
+			$('row', data).each(function() {
+				list.push($(this).find('Name').text());
+					 
+			});
+
+		}
+		
+		});
+	
+	});
+	
+	//onload, get the cities for the state.
+	$(document).ready(function(){
+		getCities('NY');
+		getOrgTypes();
+
+
+	});
+	
+
+	
+	//now what?
+	/*if they enter an orgId (we will get it next class through a search), we need to find:
+		-What different areas of information the organization has (/Application/Tabs?orgId=x)
+		-then, find each area on demand (each will need it's own call)
+			General 
+				Path: ...ESD/{orgId}/General
+			Locations
+				Path: ...ESD/{orgId}/Locations
+			Treatment
+				Path: ...ESD/{orgId}/Treatments
+			Training
+				Path: ...ESD/{orgId}/Training
+			Facilities
+				Path: ...ESD/{orgId}/Facilities
+			Equipment
+				Path: ...ESD/{orgId}/Equipment
+			Physicians
+				Path: ...ESD/{orgId}/Physicians
+			People
+				Path: ...ESD/{orgId}/People
+	*/
+	
+	function getTabs(orgId){	
+		$.ajax({
+			type:'get',
+			url:'proxy.php',
+			data:{path:'/Application/Tabs?orgId='+orgId},
+			cache:false,
+			async:true,
+			error:err,
+			success:function(data){
+				//error?
+				if($(data).find('error').length!=0){
+					//give some feedback!
+				}else{
+					//<data><row><Tab>General</Tab></row><row><Tab>Locations</Tab></row><row><Tab>Treatment</Tab></row><row><Tab>Training</Tab></row><row><Tab>Facilities</Tab></row><row><Tab>Physicians</Tab></row><row><Tab>People</Tab></row></data>
+					var x;
+					$('Tab',data).each(function(){
+						//this?
+						//console.log($(this).text());
+						x+='<li><a href="'+$(this).text()+'">'+$(this).text()+'</a></li>';
+
+					});
+					
+					getGeneral(orgId); //trigger for first time			
+		
+				//display data in tabs
+				
+				$('#tabs').tabs().show();
+				
+				
+				}
+				
+				getLocations(orgId);
+				getTreatment(orgId);
+				getTraining(orgId);
+				getFacilities(orgId);
+				getEquipment(orgId);
+				getPeople(orgId);
+				getPhysicians(orgId);
+				
+
+			}
+		});
+	}
+	
+	
+	function getGeneral(id){
+		$.ajax({
+			type:'get',
+			data:{path:'/'+id+'/General'},
+			url:'proxy.php',
+			success:function(data){
+				//test for error?
+				//<data><name>Some Ambulance</name><description>Something cool about the ambulance</description><email>flug@rit.edu</email><website>http://www.something.com</website><nummembers>500</nummembers><numcalls>400</numcalls><servicearea>500 miles</servicearea></data>
+				var x='<tr><td>Name:</td><td>'+$(data).find('name').text()+'</td></tr>';
+				x+='<tr><td>Website:</td><td><a href='+$(data).find('website').text()+'>'+$(data).find('website').text()+'</a></td></tr>';
+				x+='<tr><td>Email:</td><td>'+$(data).find('email').text()+'</td></tr>';
+				x+='<tr><td>Description:</td><td>'+$(data).find('description').text()+'</td></tr>';
+				x+='<tr><td>Number of Members:</td><td>'+$(data).find('nummembers').text()+'</td></tr>';
+				x+='<tr><td>Number of Calls:</td><td>'+$(data).find('numcalls').text()+'</td></tr>';
+				
+				$('#output').html("<h4>General Information</h4>"+x);
+	
+			}
+		});
+	}
+	
+	//added a bit more here - you all need to finish each one (and remember to put a map in locations)
+	function getLocations(orgId){
+	
+		/*
+		
+		<location>
+		<type>main</type>
+		<address1>610 Cumberland ave</address1>
+		<address2></address2>
+		<city>West Lafayette</city>
+		<state>IN</state>
+		<zip>47906</zip>
+		<phone>123-123-1233</phone>
+		<ttyPhone></ttyPhone>
+		<fax></fax>
+		<latitude>40.460395</latitude>
+		<longitude>-86.907416</longitude>
+		<countyId>830</countyId>
+		<countyName>Tippecanoe</countyName>
+		<siteId>1</siteId>
+		</location>
+
+		*/
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/Locations'},
+			url:'proxy.php',
+			success:function(data){
+			
+				//display the select
+				var x="<h4>Location Information </h4>"+'<select id="sel" onchange="getLocationInfo('+orgId+')">';
+
+				
+				//create the select options with each location
+				$('location', data).each(function(){
+					x+='<option value="'+$(this).find('siteId').text()+'">'+'Location:' +$(this).find('type').text()+'</option>';
+		
+				
+				});
+				
+				$('#tabs-2').html(x+'</select>');
+				
+				//if its the first value in option, change it
+				if($('#sel').val()){
+					getLocationInfo($('#sel').change());
+				}
+			}
+
+			
+		});
+	}
+	
+	//get the location XML data, display in table
+	function getLocationInfo(orgId){
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/Locations'},
+			url:'proxy.php',
+			success:function(data){
+				var x='<table>';			
+				
+				//latitude
+				var latVal='';
+				
+				//longitude
+				var longVal='';
+				
+				//get address for gmap
+				var add='';
+				
+				$('location', data).each(function(){
+
+				
+				//if site id matches value of option
+				if($(this).find('siteId').text() == $('#sel').val()){
+				x+='<tr><td>Type: </td> <td>'+$(this).find('type').text()+ '</td> </tr>';	
+				
+				add+=$(this).find('address1').text();
+				x+='<tr><td>Address : </td> <td>'+$(this).find('address1').text()+ '</td> </tr>';
+				
+				add+=' '+$(this).find('state').text();
+				x+='<tr><td>City: </td> <td>'+$(this).find('city').text()+ '</td> </tr>';
+				
+				add+=' '+$(this).find('zip').text();
+				x+='<tr><td>State: </td> <td>'+$(this).find('state').text()+ '</td> </tr>';
+				
+				x+='<tr><td>County: </td> <td>'+$(this).find('countyName').text()+ '</td> </tr>';
+				
+				add+=' '+$(this).find('city').text();
+				x+='<tr><td>Zip: </td> <td>'+$(this).find('zip').text()+ '</td> </tr>';
+				
+				x+='<tr><td>Phone: </td> <td>'+$(this).find('phone').text()+ '</td> </tr>';
+				x+='<tr><td>TTY: </td> <td>'+$(this).find('ttyPhone').text()+ '</td> </tr>';
+				x+='<tr><td>Fax: </td> <td>'+$(this).find('fax').text()+ '</td> </tr>';
+				
+				latVal+=' '+$(this).find('latitude').text();
+				x+='<tr><td>Latitude: </td> <td>'+$(this).find('latitude').text()+ '</td> </tr>';
+				
+				longVal+=' '+$(this).find('longitude').text();
+				x+='<tr><td>Latitude: </td> <td>'+$(this).find('longitude').text()+ '</td> </tr>';
+	
+				}
+				
+				});
+				
+				//remove previous append
+				$('#location').remove();
+				$('#gmap').remove();
+				$('#tabs-2').append('<div id="location">'+x+'</table></div> <div id="gmap"> </div>');
+				
+				//display Google maps
+				$('#gmap').width('550px').height('300px').gmap3({
+					marker:{
+						address: add,
+						latLng: [latVal, longVal]
+					},
+					map:{
+						options:{
+						zoom: 15
+						}
+					}
+				});
+				
+			}		
+		});
+	}
+	
+	function getTreatment(orgId){
+		/*
+		<treatment>
+		<typeId>10</typeId>
+		<type>Burn Center</type>
+		<abbreviation>Tr-Burn</abbreviation>
+		</treatment>
+		*/
+
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/Treatments'},
+			url:'proxy.php',
+			success:function(data){
+			
+			var x= '<table><th align="left">Type </th><th style="padding-left:400px">Abbreviation </th>';
+			
+			if($(data).find('treatment').length == 0){
+
+				$('#output3').html("<h3>No treatment available</h3>");
+							
+						
+			}else{
+				$('treatment', data).each(function(){
+					x+='<tr><td>'+$(this).find('type').text()+'</td>';
+					x+='<td style="padding-left:400px;">'+$(this).find('abbreviation').text()+'</td> </tr>';
+					
+				
+				});
+				
+				$('#output3').html('<h4>Treatments </h4>'+x);
+			}
+			}
+		});
+		
+	}
+	
+	function getTraining(orgId){
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/Training'},
+			url:'proxy.php',
+			success:function(data){
+				var x= '<table><th align="left">Type </th><th style="padding-left:400px">Abbreviation </th>';
+				
+				if($(data).find('training').length == 0){
+
+					$('#output4').html("<h3>No training available</h3>");
+							
+							
+				}else{
+					$('training', data).each(function(){
+						x+='<tr><td>'+$(this).find('type').text()+'</td>';
+						x+='<td style="padding-left:400px">'+$(this).find('abbreviation').text()+'</td> </tr>';
+					
+				
+					});
+				
+					$('#output4').html('<h4>Services/Training </h4>'+x);
+				}
+			}
+			
+		});
+	}
+	
+	function getFacilities(orgId){
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/Facilities'},
+			url:'proxy.php',
+			success:function(data){
+				var x= '<table><th align="right">Name </th><th align="right">Quantity </th> <th align="right">Description </th>';
+				
+				if($(data).find('facility').length == 0){
+
+					$('#output5').html("<h3>No facility available</h3>");
+							
+							
+				}else{
+				
+					$('facility', data).each(function(){
+						x+='<tr><td>'+$(this).find('type').text()+'</td>';
+						x+='<td style="padding-left:200px;">'+$(this).find('quantity').text()+'</td>';
+						x+='<td style="padding-left:200px;">'+$(this).find('description').text()+'</td></tr>';
+					
+				
+					});
+				
+					$('#output5').html('<h4>Facilities </h4>'+x);
+				
+				}
+				
+			}
+		});
+	
+	}
+	function getEquipment(orgId){
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/Equipment'},
+			url:'proxy.php',
+			success:function(data){
+				var x= '<table><th align="right">Name </th><th align="right">Quantity </th> <th align="right">Description </th>';
+				
+				if($(data).find('equipment').length == 0){
+
+					$('#output8').html("<h3>No equipment available</h3>");
+							
+							
+				}else{
+					$('equipment', data).each(function(){
+						x+='<tr><td>'+$(this).find('type').text()+'</td>';
+						x+='<td style="padding-left:200px;">'+$(this).find('quantity').text()+'</td>';
+						x+='<td style="padding-left:200px;">'+$(this).find('description').text()+'</td></tr>';
+					
+				
+					});
+				
+					$('#output8').html('<h4>Equipment </h4>'+x);
+				}
+			}
+		});
+	}
+	function getPhysicians(orgId){
+		$.ajax({
+			type: 'get',
+			data: {path: '/'+orgId+'/Physicians'},
+			url: 'proxy.php',
+			error: err,
+			success: function(data){
+			
+				if($(data).find('physician').length==0){
+					$('#physicians').empty();
+					$('#tabs-6').html("<h3>No physicians found </h3>");
+						
+
+       	 		}else {
+					var x = '<table id="physicians"><tr><th>Name</th><th>License</th><th>Contact Info</th></tr></thead>';
+				
+				$('physician', data).each(function(){
+					x+= '<tr><td>' +$(this).find('fName').text() +' '+ $(this).find('lName').text() +'</td><td>' + $(this).find('license').text() +'</td><td>' + $(this).find('phone').text()+ '</td></tr>';
+				});
+
+				$('#tabs-6').html('<h4>Physicians</h4><h4>Results: ('+$(data).find('physician').length +' total found)</h4>'+x);
+				$('#physicians').oneSimpleTablePagination({rowsPerPage: 10});
+				
+				
+				}
+			}
+		});
+		
+	}
+	function getPeople(orgId){
+	
+	/*
+	<data>
+	   <siteCount>
+	   <site address= siteId= siteType= >
+		 <personCount\>
+		 <person\>
+		   <personId\>
+		   <honorific\>
+		   <fName\>
+		   <mName\>
+		   <lName\>
+		   <suffix\>
+		   <role\>
+		 <person\>
+	   </site>
+	 </data>
+	 */
+	 
+	 $.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/People'},
+			url:'proxy.php',
+			success:function(data){
+			
+				//select on change
+				var x="<h4>People</h4>Please choose a site: "+'<select id="peo" onchange="getPeopleInfo('+orgId+')">';
+
+				
+				//create the select options with each location
+				$('site', data).each(function(){
+
+					x+='<option value="'+$(this).attr('siteId')+'">'+$(this).attr('address')+'</option>';
+						
+					
+				});
+				
+				
+
+				$('#tabs-7').html(x+'</select>');
+				
+				//if its the first value in option, change it
+				if($('#peo').val()){
+					getPeopleInfo($('#peo').change());
+				}
+			}
+
+			
+		});
+		
+	}
+	
+	function getPeopleInfo(orgId){
+		$.ajax({
+			type:'get',
+			data:{path:'/'+orgId+'/People'},
+			url:'proxy.php',
+			success:function(data){
+			
+			var x='<table border="1">';			
+			
+			
+			$('site', data).each(function(){
+				//if site id matches value of option
+				if($(this).attr('siteId') == $('#peo').val()){
+					//and person is found
+					if($('personCount', $(this)).text() == "0"){
+
+					x+= "<h3>No people found at this location</h3>";
+							
+						
+					}else{
+
+							
+
+						//get the address attribute in site
+						x+='<tr><td colspan="2">Site '+$(this).attr('siteId')+': ' +$(this).attr('address')+ '</td> </tr>';	
+						x+='<tr><th>Name </th> <th> Role </th></tr>';
+								
+								
+								
+						//for each site, get the person
+						$('person', $(this)).each(function(){ 
+								
+							x+= '<tr><td width="400px">'+$(this).find('honorific').text()+' '+ $(this).find('fName').text()+' '+ $(this).find('mName').text()+' '+ $(this).find('lName').text()+' '+$(this).find('suffix').text()+' '+ '</td>';
+							x+='<td width="200px">'+$(this).find('role').text()+ '</td></tr>';
+										
+						});
+							
+					}//end else
+					
+				}
+					
+			
+			});
+
+			$('#people').remove();
+			$('#tabs-7').append('<div id="people">'+x+'</table></div>');
+	
+			}
+		
+		});//end ajax call
+	}
+	
+
+	function err(d){
+		alert(d);
+	}
+	
+	//NEW!/////////////////////////////////////
+	//building the search functionality.
+
+	
+	function getCities(whichState){
+		//make ajax call to get the cities from the given State
+		if(whichState == ''){
+    			$('#orgCitySearch').html('City/Town<input id="cityTown" type="text"/>');
+    		
+			}else{
+    		$.ajax({
+  				type: "GET",
+  				async: true,
+  				cache:false,
+  				url: "proxy.php",
+  				data: {path: '/Cities?state='+whichState},//Need code here!  
+  				dataType: "xml",
+  				success: function(data, status){ 
+       	 			var x='';
+       	 			if($(data).find('error').length != 0){
+	       	 			//do nothing?
+       	 			}else if($(data).find('row').length==0 && whichState != ''){
+       	 				$('#orgCitySearch').html('City/Town <input id="cityTown" type="text" value="No cities/Towns in '+whichState+'"/>');
+					
+					
+					}else{
+       	 				x+='<select id="city" name="town">';
+       	 				x+='<option value="">--select a town--</option>';
+       	 				$('city',data).each(function(){
+       	 					x+='<option value="'+$(this).text()+'">'+$(this).text()+'</option>';
+       	 				});
+
+       	 				$('#orgCitySearch').html(x+'</select>');
+       	 			}
+		   		}
+			});
+			}
+	}
+	
+	//go get the orgTypes (Ambulance, Hospital, etc) - how would these change?  How often?
+	function getOrgTypes(){ 
+		$.ajax({
+			type:'get',
+			async:true,
+			cache:false,
+			url:'proxy.php',
+			data:{path:'/OrgTypes'},
+			dataType:'xml',
+			success:function(data){
+				//check for errors...
+				var x='<option value="">--select org type--</option>';
+				$('type',data).each(function(){
+					x+='<option value="'+ $(this).text() +'">'+ $(this).text() +'</option>';
+				});
+				$('#orgType').html(x);
+			},
+			error:err
+		});
+	}
+	
+	//do a search.  Results of this should hook in directly with what we built in 7a so when
+	//an org is clicked it will create the select and getGeneral().
+	function checkSearch(){
+		$.ajax({
+			type:'get',
+			async:true,
+			cache:false,
+			url:'proxy.php',
+			data:{path:'/Organizations?'+$('#searchForm').serialize()},
+			dataType:'xml',
+			success:function(data){
+				//check for errors...
+				/*				
+				<row>
+					<OrganizationID>2098</OrganizationID>
+					<type>Nursing Home</type>
+					<Name>Absolut Center For Nursing and Rehabilitation at Endicott, LLC</Name>
+					<Email>amandajean57@yahoo.com</Email>
+					<city>Endicott</city>
+					<zip>13760</zip>
+					<CountyName>Broome</CountyName>
+					<State>NY</State>
+				</row>*/
+				
+				var y='<h3>Results: ('+$(data).find('row').length+' total found) </h3>';
+				
+				var x='<table id="tablepaging" border="1" width="100%"><tr><th>Type:</th><th>Name:</th><th>Email</th><th>City</th><th>Zip</th><th>County</th><th>State</th></tr>';
+
+				
+				if($(data).find('row').length==0){
+					$('#tablepaging').empty();
+					$('#tableOutput').html("<h3>Results: </h3> No data matches for: "+$('#orgType').val()+' > State: '+$('#state').val()+' > City: '+ $('#city').val());
+						
+
+       	 		}else {
+				$('row',data).each(function(){	
+
+					x+='<tr><td>'+$(this).find('type').text()+'</td>';
+					x+='<td style="color:blue;cursor:pointer;" onclick="getTabs('+$(this).find('OrganizationID').text()+')" >'+$(this).find('Name').text()+'</td>';
+					x+='<td>'+$(this).find('Email').text()+'</td>';
+					x+='<td>'+$(this).find('city').text()+'</td>';
+					x+='<td>'+$(this).find('zip').text()+'</td>';
+					x+='<td>'+$(this).find('CountyName').text()+'</td>';
+					x+='<td>'+$(this).find('State').text()+'</td></tr>';
+					
+
+				});
+				
+		
+				
+				$('#tableOutput').html(y+ x+'</table>');
+		
+				NProgress.done();
+				
+				//puts table data into pages
+				$('#tablepaging').oneSimpleTablePagination({rowsPerPage: 10});
+				
+				}
+				
+			},
+			error:err
+		});
+	}
+	
+</script>
+</head>
+<body>
+	<h2><span>Emer</span>Gency Search Engine</h2>
+	<form >
+    
+	
+	
+	<div id="tabs">
+		<ul>
+            <li><a href="#tabs-1">General</a></li>
+			<li><a href="#tabs-2">Locations</a></li>
+			<li><a href="#tabs-3">Treatments</a></li>
+			<li><a href="#tabs-4">Training</a></li>
+			<li><a href="#tabs-5">Facilities</a></li>
+			<li><a href="#tabs-6">Physicians</a></li>
+			<li><a href="#tabs-7">People</a></li>
+			<li><a href="#tabs-8">Equipment</a></li>
+        </ul>
+		
+		<div id="tabs-1"> 
+			<table id="output"></table>
+		</div>
+		
+		<div id="tabs-2"> </div>
+		
+
+		<div id="tabs-3"> 
+			<table id="output3"></table>
+		</div>
+		
+		<div id="tabs-4"> 
+			<table id="output4"></table>
+		</div>
+		
+		<div id="tabs-5"> 
+			<table id="output5"></table>
+		</div>
+		
+		<div id="tabs-6"> </div>
+		
+		<div id="tabs-7"> </div>
+		
+		<div id="tabs-8"> 
+			<table id="output8"></table>
+		</div>
+		
+		<a id="closing" onmouseover="" style="cursor: pointer" onclick="$('#tabs').hide()"> [ Close ] </a>
+	</div>
+	
+	<div id="dump"></div>
+  	<table id="output"></table>
+  </form>
+  <hr>
+  <form id="searchForm">
+    <fieldset>
+      <legend>Search Criteria</legend>
+      <p>Organization Type <select id="orgType" name="type" onchange=""></select></p>
+      <p><span id="orgLabel">Organization Name</span> <input id="orgName" name="name" type="text"> <em style="color: rgb(104, 129, 162);">*can be partial - "vol" for "Volunteer"</em></p>
+      <p>State <select id="state" name="state" onchange="getCities(this.value)">
+        <option value="">
+          All States
+        </option>
+        <option value="AK">AK</option>
+        <option value="AL">AL</option>
+        <option value="AR">AR</option>
+        <option value="AZ">AZ</option>
+        <option value="CA">CA</option>
+        <option value="CO">CO</option>
+        <option value="CT">CT</option>
+        <option value="DC">DC</option>
+        <option value="DE">DE</option>
+        <option value="FL">FL</option>
+        <option value="GA">GA</option>
+        <option value="HI">HI</option>
+        <option value="IA">IA</option>
+        <option value="ID">ID</option>
+        <option value="IL">IL</option>
+        <option value="IN">IN</option>
+        <option value="KS">KS</option>
+        <option value="KY">KY</option>
+        <option value="LA">LA</option>
+        <option value="MA">MA</option>
+        <option value="MD">MD</option>
+        <option value="ME">ME</option>
+        <option value="MI">MI</option>
+        <option value="MN">MN</option>
+        <option value="MO">MO</option>
+        <option value="MS">MS</option>
+        <option value="MT">MT</option>
+        <option value="NC">NC</option>
+        <option value="ND">ND</option>
+        <option value="NE">NE</option>
+        <option value="NH">NH</option>
+        <option value="NJ">NJ</option>
+        <option value="NM">NM</option>
+        <option value="NV">NV</option>
+        <option value="NY" selected="selected">NY</option>
+        <option value="OH">OH</option>
+        <option value="OK">OK</option>
+        <option value="OR">OR</option>
+        <option value="PA">PA</option>
+        <option value="RI">RI</option>
+        <option value="SC">SC</option>
+        <option value="SD">SD</option>
+        <option value="TN">TN</option>
+        <option value="TX">TX</option>
+        <option value="UT">UT</option>
+        <option value="VA">VA</option>
+        <option value="VT">VT</option>
+        <option value="WA">WA</option>
+        <option value="WI">WI</option>
+        <option value="WV">WV</option>
+        <option value="WY">WY</option>
+      </select> <span id="orgCitySearch"></span></p>
+      <p>County <input id="county" name="county" type="text"></p>
+      <p>ZIP Code <input id="zip" name="zip" type="text"></p>
+      <div style="margin:0 0 0 210px">
+        <input value="Show Results" onclick="checkSearch(); NProgress.start();" id="btnSearch" class="button" type="button"> <input type="reset" class="button" value="Reset Form" onclick="">
+      </div>
+    </fieldset>
+  </form>
+
+<div id="tableOutput"> </div>
+
+<div id="popup"> </div>
+
+<script type="text/javascript">
+
+	$(function(){
+		
+		$('#popup').avgrund({
+
+			openOnEvent: false, // set to 'false' to init on load
+			template: '<p> Hi, welcome to my Search Engine! Here&#39;s where you can find most of the Emergency Services in the U.S </p>',
+			showClose: true,
+			width: 380, // max is 640px
+			height: 280, // max is 350px
+			overlayClass: '', // ..and overlay block	
+			holderClass: 'custom',
+			showCloseText: 'Click here to begin', // type your text for close button
+			closeByDocument: true
+		
+		});
+		
+		
+	});
+	
+
+	
+</script>
+
+<footer> Copyright (c) 2013 Quang Nguyen </footer>
+
+</body>
+</html>

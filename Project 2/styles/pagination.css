@@ -1,0 +1,27 @@
+
+
+#tablepaging tr {
+	background:#D1E0FF;
+	
+}
+
+#tablepaging th {
+	padding: 3px 18px 3px 10px;
+	background: rgba(71, 186, 255, 0.8);
+	color: white;
+	
+	border-left:1px solid #E1E0D2;
+	border-top:1px solid #E1E0D2;
+	border-right:1px solid #8D8961;
+	border-bottom:1px solid #8D8961;
+
+}
+
+#tablepaging td{
+	padding: 3px 10px;
+}
+
+#tablepaging tr:nth-child(even){
+	background: #E0D1FF;
+
+}
